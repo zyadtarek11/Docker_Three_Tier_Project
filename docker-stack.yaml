@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    image: backend:latest
+    secrets:
+    - db-password
+    networks:
+    - backend-network
+    ports:
+    - "8000:8000"
+
+  proxy:
+    image: nginx:latest
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+    - backend-network
+    ports:
+    - "80:80"
+    - "443:443"
+
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+    volumes:
+    - db_data:/var/lib/mysql
+    networks:
+    - backend-network
+
+secrets:
+  db-password:
+    external: true
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  db_data:

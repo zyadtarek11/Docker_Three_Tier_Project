@@ -13,6 +13,8 @@ COPY . .
 # Build the Go app
 RUN go build -o main .
 
+RUN go mod download
+
 # Stage 2: Use a minimal base image for the final container
 FROM alpine:latest
 
