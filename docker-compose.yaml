@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: backend-service
     environment:
-      DB_PASSWORD: ${DB_PASSWORD}  # Make sure the environment variable is passed here
+      DB_PASSWORD: ${DB_PASSWORD}  # Ensure this matches the MySQL user password
     networks:
       - backend-network
     depends_on:

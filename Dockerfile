@@ -7,13 +7,14 @@ WORKDIR /app
 # Copy the go.mod and go.sum files first to leverage Docker cache
 COPY go.mod go.sum ./
 
+RUN go mod download
+
 # Copy the entire project
 COPY . .
 
 # Build the Go app
 RUN go build -o main .
 
-RUN go mod download
 
 # Stage 2: Use a minimal base image for the final container
 FROM alpine:latest
