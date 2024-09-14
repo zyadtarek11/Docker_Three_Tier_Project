@@ -5,10 +5,10 @@ services:
     image: mysql:5.7
     container_name: mysql-db
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: example
-      MYSQL_USER: user
-      MYSQL_PASSWORD: userpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
     networks:
@@ -19,8 +19,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: backend-service
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}  # Make sure the environment variable is passed here
     networks:
       - backend-network
+    depends_on:
+      - db
 
   proxy:
     build:
@@ -29,6 +33,7 @@ services:
     container_name: nginx-proxy
     ports:
       - "80:80"
+      - "443:443"
     networks:
       - backend-network
     depends_on:

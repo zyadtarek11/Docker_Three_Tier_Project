@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -16,30 +15,37 @@ import (
 )
 
 func connect() (*sql.DB, error) {
-	bin, err := ioutil.ReadFile("/run/secrets/db-password")
-	if err != nil {
-		return nil, err
+	// Retrieve the DB password from an environment variable
+	dbPassword := os.Getenv("DB_PASSWORD")
+	if dbPassword == "" {
+		return nil, fmt.Errorf("DB_PASSWORD environment variable not set")
 	}
-	return sql.Open("mysql", fmt.Sprintf("root:%s@tcp(db:3306)/example", string(bin)))
+
+	// Construct the connection string using the password
+	return sql.Open("mysql", fmt.Sprintf("root:%s@tcp(db:3306)/example", dbPassword))
 }
 
 func blogHandler(w http.ResponseWriter, r *http.Request) {
 	db, err := connect()
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
 
 	rows, err := db.Query("SELECT title FROM blog")
 	if err != nil {
-		w.WriteHeader(500)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	var titles []string
 	for rows.Next() {
 		var title string
 		err = rows.Scan(&title)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		titles = append(titles, title)
 	}
 	json.NewEncoder(w).Encode(titles)
@@ -51,7 +57,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Print("Listening 8000")
+	log.Print("Listening on port 8000")
 	r := mux.NewRouter()
 	r.HandleFunc("/", blogHandler)
 	log.Fatal(http.ListenAndServe(":8000", handlers.LoggingHandler(os.Stdout, r)))
