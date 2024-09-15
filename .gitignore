@@ -1,2 +1,5 @@
-# Ignore .env file
+# Ignore Visual Studio Code directory
+.vscode/
+
+# Ignore environment file
 .env
